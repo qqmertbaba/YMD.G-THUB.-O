@@ -1,0 +1,54 @@
+p{
+    line-height:1.6;
+} 
+
+.ing{
+    background-color: rgb(92, 167, 211);
+    border-radius: 6px;
+    text-align: center;
+    margin-right: 220px;
+    margin-left: 220px;
+    margin-bottom: 70px;
+}
+
+
+.navbar{
+    border-style: solid;  border-width: 2px;
+    border-radius: 10px;
+}
+
+
+.navbar {
+    height: 8vh;
+    width: 100%;
+    background: linear-gradient(90deg, rgba(236, 4, 93, 0.918) 0%, rgb(162, 7, 133) 35%, rgb(162, 7, 223) 100%);
+    border-style: solid;
+    text-decoration:none;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-around;
+    transform-style: preserve-3d;
+    transition: all 1s ease-out;
+
+    a{
+        text-decoration: none;
+        color: black;
+    }
+
+}
+
+.nav1:hover{
+   
+
+    transition: all 1s ease-out;
+    
+
+}
+
+.navbar:hover{
+    transition: all 0.4s ease-out;
+     
+    transform: scale(1.01);
+
+}
