@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş-Oluş-Durum Konusu Soru-Cevap Oyunu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 500px;
+        }
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #d9d9d9;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #ccc;
+        }
+        .result {
+            font-size: 22px;
+            margin-top: 20px;
+        }
+        .mükemmel {
+            color: blue;
+            font-weight: bold;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>İş-Oluş-Durum Konusu Soru-Cevap Oyunu</h1>
+        <div id="quiz">
+            <div id="question-container">
+                <p id="question-text" class="question"></p>
+                <div id="options-container" class="options">
+                    <!-- Options will be displayed here -->
+                </div>
+            </div>
+            <div id="score-container">
+                <p>Skor: <span id="score">0</span></p>
+                <p>Kalan Haklar: <span id="lives">4</span></p>
+            </div>
+            <button id="next-button" class="button" onclick="nextQuestion()">Sonraki Soru</button>
+        </div>
+        <div id="result-container" class="result" style="display: none;">
+            <p>Oyun Bitti!</p>
+            <p>Toplam Skor: <span id="final-score"></span></p>
+            <p class="mükemmel" id="final-message" style="display: none;">MÜKEMMELSİN!</p>
+            <button class="button" onclick="restartGame()">Tekrar Oyna</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // İş Kipi Soruları
+            { question: "Aşağıdakilerden hangisi iş kipine örnektir?", options: ["Gitmelisin", "Gidiyorum", "Gitmişti", "Gideceğim"], answer: "Gitmelisin" },
+            { question: "Hangi cümlede iş kipi kullanılmıştır?", options: ["Okula gidiyorum.", "Okula giderim.", "Okula gitmiştim.", "Okula gideceğim."], answer: "Okula giderim." },
+            { question: "‘Sen çok çalışmalısın.’ cümlesinde hangi kip kullanılmıştır?", options: ["İstek Kipi", "Gereklilik Kipi", "Zorunluluk Kipi", "Şart Kipi"], answer: "Zorunluluk Kipi" },
+            { question: "‘Bunu yapmalısın.’ cümlesindeki kip nedir?", options: ["İstek Kipi", "Gereklilik Kipi", "Zorunluluk Kipi", "Şart Kipi"], answer: "Zorunluluk Kipi" },
+            { question: "‘Gitmelisin’ cümlesinde hangi kip kullanılmıştır?", options: ["Gereklilik Kipi", "Zorunluluk Kipi", "İstek Kipi", "Şart Kipi"], answer: "Gereklilik Kipi" },
+
+            // Oluş Kipi Soruları
+            { question: "‘Oluşmak’ fiili hangi kipi ifade eder?", options: ["Oluş Kipi", "Durum Kipi", "İş Kipi", "Zaman Kipi"], answer: "Oluş Kipi" },
+            { question: "‘O zaman geldi.’ cümlesinde hangi kip kullanılmıştır?", options: ["Oluş Kipi", "İş Kipi", "Durum Kipi", "Zorunluluk Kipi"], answer: "Oluş Kipi" },
+            { question: "Aşağıdaki cümlelerden hangisinde oluş kipi kullanılmıştır?", options: ["Başarı elde etti.", "Gülüşleri beni etkiledi.", "Gecikti", "Bir şeyler oluyor."], answer: "Bir şeyler oluyor." },
+            { question: "‘Çok bekledim.’ cümlesindeki fiil kipi nedir?", options: ["İş Kipi", "Durum Kipi", "Oluş Kipi", "Zaman Kipi"], answer: "Oluş Kipi" },
+
+            // Durum Kipi Soruları
+            { question: "‘Herkes gülümsüyor.’ cümlesinde hangi kip kullanılmıştır?", options: ["Durum Kipi", "İş Kipi", "Oluş Kipi", "Zorunluluk Kipi"], answer: "Durum Kipi" },
+            { question: "‘Yağmur yağıyor.’ cümlesinde hangi kip kullanılmıştır?", options: ["Oluş Kipi", "İş Kipi", "Durum Kipi", "Şart Kipi"], answer: "Durum Kipi" },
+            { question: "Aşağıdakilerden hangisi durum kipine örnektir?", options: ["Beni bekliyorsun", "Beni gördüler", "Beni görmek istiyorsun", "Ben geliyorum"], answer: "Beni gördüler" },
+            { question: "‘Köpeğim çok yoruldu.’ cümlesindeki fiil kipi nedir?", options: ["Durum Kipi", "İş Kipi", "Zorunluluk Kipi", "Oluş Kipi"], answer: "Durum Kipi" },
+
+            // Karma Sorular
+            { question: "‘Daha önce gitmiştim.’ cümlesinde hangi kip kullanılmıştır?", options: ["İş Kipi", "Durum Kipi", "Oluş Kipi", "Zaman Kipi"], answer: "Zaman Kipi" },
+            { question: "‘Okula gitmelisin.’ cümlesindeki kip nedir?", options: ["Gereklilik Kipi", "İstek Kipi", "Zorunluluk Kipi", "Şart Kipi"], answer: "Gereklilik Kipi" },
+            { question: "‘O bu işi yapacakmış.’ cümlesinde hangi kip kullanılmıştır?", options: ["Şart Kipi", "Gereklilik Kipi", "İstek Kipi", "Zorunluluk Kipi"], answer: "Gereklilik Kipi" },
+            { question: "‘Benimle gelmelisin.’ cümlesindeki kip nedir?", options: ["Zorunluluk Kipi", "İstek Kipi", "Gereklilik Kipi", "Şart Kipi"], answer: "Zorunluluk Kipi" },
+        ];
+
+        let score = 0;
+        let lives = 4;
+        let usedQuestions = [];
+
+        // Soruları rastgele sıraya koyma
+        function shuffleQuestions() {
+            usedQuestions = [];
+            questions.sort(() => Math.random() - 0.5);
+        }
+
+        function loadQuestion() {
+            if (usedQuestions.length === questions.length) {
+                gameOver();
+                return;
+            }
+
+            let nextQuestionIndex;
+            do {
+                nextQuestionIndex = Math.floor(Math.random() * questions.length);
+            } while (usedQuestions.includes(nextQuestionIndex));
+
+            usedQuestions.push(nextQuestionIndex);
+
+            const question = questions[nextQuestionIndex];
+            document.getElementById("question-text").innerText = question.question;
+
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+            question.options.forEach(option => {
+                const optionElement = document.createElement("div");
+                optionElement.classList.add("option");
+                optionElement.innerText = option;
+                optionElement.onclick = function() {
+                    checkAnswer(option);
+                };
+                optionsContainer.appendChild(optionElement);
+            });
+        }
+
+        function checkAnswer(selectedOption) {
+            const correctAnswer = questions[usedQuestions[usedQuestions.length - 1]].answer;
+            if (selectedOption === correctAnswer) {
+                score++;
+                document.getElementById("score").innerText = score;
+            } else {
+                lives--;
+                document.getElementById("lives").innerText = lives;
+                if (lives === 0) {
+                    gameOver();
+                }
+            }
+            loadQuestion();
+        }
+
+        function gameOver() {
+            document.getElementById("quiz").style.display = "none";
+            document.getElementById("result-container").style.display = "block";
+            document.getElementById("final-score").innerText = score;
+            if (score === questions.length) {
+                document.getElementById("final-message").style.display = "block";
+            }
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 4;
+            usedQuestions = [];
+            document.getElementById("score").innerText = score;
+            document.getElementById("lives").innerText = lives;
+            document.getElementById("quiz").style.display = "block";
+            document.getElementById("result-container").style.display = "none";
+            shuffleQuestions();
+            loadQuestion();
+        }
+
+        // Başlangıç
+        shuffleQuestions();
+        loadQuestion();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilgi Yarışması</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            background-color: #4CAF50;
+            color: white;
+            margin: 5px 0;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .options li:hover {
+            background-color: #45a049;
+        }
+        .message {
+            font-size: 18px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .stat-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .stat-container .stats {
+            font-size: 16px;
+        }
+        #restart-button {
+            display: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #restart-button:hover {
+            background-color: #45a049;
+        }
+        .game-over-message {
+            font-size: 20px;
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bilgi Yarışması</h1>
+    <div class="stat-container">
+        <div class="stats" id="score">Skor: 0</div>
+        <div class="stats" id="remaining-lives">Kalan Hak: 4</div>
+    </div>
+    <div id="question-container">
+        <p class="question" id="question-text">Loading...</p>
+        <ul class="options" id="options-list"></ul>
+    </div>
+    <div class="message" id="message"></div>
+    <div class="game-over-message" id="game-over-message"></div>
+    <button id="restart-button" onclick="restartGame()">Yeniden Başla</button>
+</div>
+
+<script>
+// 80 sorudan oluşan soru listesi
+const questions = [
+    { question: "Türkiye'nin başkenti neresidir?", options: ["İstanbul", "Ankara", "İzmir", "Bursa"], correct: "Ankara" },
+    { question: "Hangi gezegen en büyüğüdür?", options: ["Venüs", "Jüpiter", "Mars", "Satürn"], correct: "Jüpiter" },
+    { question: "Hangi yıl Ay'a ilk insanlı uçuş yapılmıştır?", options: ["1965", "1969", "1972", "1980"], correct: "1969" },
+    { question: "Türkiye Cumhuriyeti'nin kurucusu kimdir?", options: ["Mustafa Kemal Atatürk", "İsmet İnönü", "Recep Tayyip Erdoğan", "Süleyman Demirel"], correct: "Mustafa Kemal Atatürk" },
+    { question: "İstanbul Boğazı'nın uzunluğu ne kadardır?", options: ["25 km", "30 km", "35 km", "40 km"], correct: "30 km" },
+    { question: "Dünyanın en büyük okyanusu hangisidir?", options: ["Atlantik Okyanusu", "Hint Okyanusu", "Pasifik Okyanusu", "Arktik Okyanusu"], correct: "Pasifik Okyanusu" },
+    { question: "En büyük kara hayvanı hangisidir?", options: ["Afrika fili", "Asya fili", "Zürafa", "Gergedan"], correct: "Afrika fili" },
+    { question: "Hangi elementin sembolü O'dur?", options: ["Oksijen", "Osmiyum", "Orta", "Oksit"], correct: "Oksijen" },
+    { question: "Türk milletinin milli marşı nedir?", options: ["İstiklal Marşı", "Cumhuriyet Marşı", "Bayrak Marşı", "Zafer Marşı"], correct: "İstiklal Marşı" },
+    { question: "Dünyada en fazla konuşulan dil hangisidir?", options: ["İngilizce", "Mandarince", "Hindice", "İspanyolca"], correct: "Mandarince" },
+    { question: "Dünyanın en uzun nehrinin adı nedir?", options: ["Nil Nehri", "Amazon Nehri", "Ganj Nehri", "Yangtze Nehri"], correct: "Nil Nehri" },
+    { question: "Hangi hayvan uçabilir?", options: ["Kuş", "Yarasa", "Böcek", "Bütün seçenekler"], correct: "Bütün seçenekler" },
+    { question: "Hangi gezegenin halkaları vardır?", options: ["Mars", "Venüs", "Satürn", "Jüpiter"], correct: "Satürn" },
+    { question: "Türkiye'deki en yüksek dağ hangisidir?", options: ["Ağrı Dağı", "Erciyes Dağı", "Uludağ", "Kaçkar Dağı"], correct: "Ağrı Dağı" },
+    { question: "En küçük kuş türü hangisidir?", options: ["Serçe", "Kuş", "Kolibri", "Kanarya"], correct: "Kolibri" },
+    { question: "Hangi elementin sembolü Na'dır?", options: ["Sodyum", "Azot", "Nikel", "Neon"], correct: "Sodyum" },
+    { question: "Türkiye'nin en büyük gölü hangisidir?", options: ["Van Gölü", "Eğirdir Gölü", "Beyşehir Gölü", "Acıgöl"], correct: "Van Gölü" },
+    { question: "Güneş Sistemi'nde kaç gezegen vardır?", options: ["7", "8", "9", "10"], correct: "8" },
+    { question: "Hangi gezegen en fazla uydusuna sahiptir?", options: ["Satürn", "Jüpiter", "Mars", "Uranüs"], correct: "Satürn" },
+    { question: "Kaç hafta 1 yıl eder?", options: ["48 hafta", "50 hafta", "52 hafta", "54 hafta"], correct: "52 hafta" },
+    { question: "Hangi hayvan 10 yıl boyunca uyuyabilir?", options: ["Ayı", "Yarasa", "Kertenkele", "Kaplumbağa"], correct: "Ayı" },
+    { question: "En küçük kuş türü nedir?", options: ["Serçe", "Bülbül", "Kolibri", "Kanarya"], correct: "Kolibri" },
+    { question: "Yüksekliği 8848 metre olan dağ nedir?", options: ["Kilimanjaro", "Everest", "Aladağlar", "Fujiyama"], correct: "Everest" },
+    { question: "Türkiye'nin en büyük gölü hangisidir?", options: ["Van Gölü", "Eğirdir Gölü", "Beyşehir Gölü", "Acıgöl"], correct: "Van Gölü" },
+    { question: "Güneş Sistemi'nde kaç gezegen vardır?", options: ["7", "8", "9", "10"], correct: "8" },
+    { question: "Hangi gezegen en fazla uydusuna sahiptir?", options: ["Satürn", "Jüpiter", "Mars", "Uranüs"], correct: "Satürn" },
+    { question: "Kaç hafta 1 yıl eder?", options: ["48 hafta", "50 hafta", "52 hafta", "54 hafta"], correct: "52 hafta" },
+    { question: "Hangi hayvan 10 yıl boyunca uyuyabilir?", options: ["Ayı", "Yarasa", "Kertenkele", "Kaplumbağa"], correct: "Ayı" },
+    { question: "En küçük kuş türü nedir?", options: ["Serçe", "Bülbül", "Kolibri", "Kanarya"], correct: "Kolibri" },
+    { question: "Yüksekliği 8848 metre olan dağ nedir?", options: ["Kilimanjaro", "Everest", "Aladağlar", "Fujiyama"], correct: "Everest" },
+    { question: "Dünyanın en büyük adası hangisidir?", options: ["Grönland", "Borneo", "Madagaskar", "Sumatra"], correct: "Grönland" },
+    { question: "Güneş'ten sonra en yakın yıldız nedir?", options: ["Proxima Centauri", "Alpha Centauri", "Betelgeuse", "Sirius"], correct: "Proxima Centauri" },
+    { question: "Türk milletinin bayrağının rengini belirleyen yıldızın adı nedir?", options: ["Ay Yıldız", "Yıldızlar", "Aylık", "Hilal"], correct: "Ay Yıldız" },
+    { question: "Dünyanın en yüksek şelalesi hangisidir?", options: ["Niagara Şelalesi", "Angel Şelalesi", "Victoria Şelalesi", "Iguazu Şelalesi"], correct: "Angel Şelalesi" },
+    { question: "Hangi gezegenin atmosferinde en çok karbondioksit vardır?", options: ["Venüs", "Mars", "Jüpiter", "Satürn"], correct: "Venüs" },
+    { question: "Türkiye Cumhuriyeti'nin kurulduğu yıl nedir?", options: ["1920", "1923", "1925", "1930"], correct: "1923" },
+    { question: "Hangi elementin sembolü Fe'dir?", options: ["Demir", "Altın", "Çinko", "Gümüş"], correct: "Demir" },
+    { question: "Kaç bölgeden oluşan Türkiye coğrafyası vardır?", options: ["5", "6", "7", "8"], correct: "7" },
+    { question: "Hangi gezegenin yüzeyi tamamen sıcak ve kuru bir çöl gibidir?", options: ["Venüs", "Mars", "Merkür", "Uranüs"], correct: "Venüs" },
+    { question: "Dünyadaki en yüksek volkanik dağ hangisidir?", options: ["Kilimanjaro", "Ağrı Dağı", "Mount St. Helens", "Ojos del Salado"], correct: "Ojos del Salado" },
+    { question: "Çok yüksek sesle çaldığında ses çıkarmayan ancak hala ses dalgaları üreten bir alet hangisidir?", options: ["Piyano", "Flüt", "Gitar", "Ses kaydedici"], correct: "Piyano" },
+    { question: "Hangi elementin sembolü H'dir?", options: ["Hidrojen", "Helium", "Oksijen", "Helyum"], correct: "Hidrojen" },
+    { question: "Avustralya'nın en büyük şehri hangisidir?", options: ["Melbourne", "Sydney", "Brisbane", "Perth"], correct: "Sydney" },
+    { question: "Dünyadaki en hızlı kara hayvanı hangisidir?", options: ["Aslan", "Çita", "Zebra", "Kanguru"], correct: "Çita" },
+    { question: "Hangi gezegenin yüzeyi tamamen buzla kaplıdır?", options: ["Venüs", "Mars", "Neptün", "Uranüs"], correct: "Neptün" },
+    { question: "Dünyanın en büyük çölü hangisidir?", options: ["Sahara Çölü", "Gobi Çölü", "Karakum Çölü", "Antarktika Çölü"], correct: "Sahara Çölü" },
+    { question: "Buzullar hangi gezegenin yüzeyinde bulunmaz?", options: ["Mars", "Venüs", "Jüpiter", "Satürn"], correct: "Venüs" }
+    // 80 soruya kadar devam...
+];
+
+let currentQuestionIndex = 0;
+let correctAnswers = 0;
+let remainingLives = 4;
+let gameOver = false;
+
+// Soruları karıştır
+function shuffleQuestions() {
+    for (let i = questions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+}
+
+// Oyuna başla
+function startGame() {
+    shuffleQuestions();
+    displayNextQuestion();
+}
+
+// Sonraki soruyu göster
+function displayNextQuestion() {
+    if (currentQuestionIndex >= questions.length || remainingLives <= 0) {
+        endGame();
+        return;
+    }
+
+    const question = questions[currentQuestionIndex];
+    document.getElementById('question-text').textContent = question.question;
+    const optionsList = document.getElementById('options-list');
+    optionsList.innerHTML = '';
+    question.options.forEach(option => {
+        const li = document.createElement('li');
+        li.textContent = option;
+        li.onclick = () => checkAnswer(option);
+        optionsList.appendChild(li);
+    });
+
+    updateStats();
+}
+
+// Cevabı kontrol et
+function checkAnswer(selectedOption) {
+    const question = questions[currentQuestionIndex];
+
+    if (selectedOption === question.correct) {
+        correctAnswers++;
+        document.getElementById('message').textContent = "Doğru Cevap!";
+    } else {
+        remainingLives--;
+        document.getElementById('message').textContent = "Yanlış Cevap!";
+    }
+
+    currentQuestionIndex++;
+    displayNextQuestion();
+}
+
+// İstatistikleri güncelle
+function updateStats() {
+    document.getElementById('score').textContent = `Skor: ${correctAnswers}`;
+    document.getElementById('remaining-lives').textContent = `Kalan Hak: ${remainingLives}`;
+}
+
+// Oyunu bitir
+function endGame() {
+    gameOver = true;
+    document.getElementById('game-over-message').textContent = `Oyun Bitti! Skorunuz: ${correctAnswers}`;
+    document.getElementById('restart-button').style.display = 'block';
+}
+
+// Oyunu yeniden başlat
+function restartGame() {
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    remainingLives = 4;
+    gameOver = false;
+    document.getElementById('game-over-message').textContent = '';
+    document.getElementById('restart-button').style.display = 'none';
+    startGame();
+}
+
+startGame();
+</script>
+
+</body>
+</html>

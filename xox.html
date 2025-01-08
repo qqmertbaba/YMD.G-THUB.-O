@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XOX (Tic-Tac-Toe) Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .game-board div {
+            width: 100px;
+            height: 100px;
+            background-color: lightgray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .game-board div.clicked {
+            pointer-events: none;
+        }
+
+        #status {
+            font-size: 1.5em;
+        }
+
+        #reset {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #reset:hover {
+            background-color: #45a049;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>XOX (Tic-Tac-Toe) Oyunu</h1>
+    <div id="status">Oyuncu X'in Sırası</div>
+    <div class="game-board" id="gameBoard">
+        <div onclick="makeMove(0)"></div>
+        <div onclick="makeMove(1)"></div>
+        <div onclick="makeMove(2)"></div>
+        <div onclick="makeMove(3)"></div>
+        <div onclick="makeMove(4)"></div>
+        <div onclick="makeMove(5)"></div>
+        <div onclick="makeMove(6)"></div>
+        <div onclick="makeMove(7)"></div>
+        <div onclick="makeMove(8)"></div>
+    </div>
+    <button id="reset" onclick="resetGame()">Yeniden Başlat</button>
+
+    <script>
+        const board = ['', '', '', '', '', '', '', '', '']; // Tahtadaki hücreler
+        let currentPlayer = 'X'; // İlk oyuncu
+        let gameOver = false; // Oyun bitti mi kontrolü
+
+        const statusDiv = document.getElementById('status'); // Durum metni
+        const gameBoardDiv = document.getElementById('gameBoard'); // Tahta
+
+        // Oyun tahtasına hamle yapmak
+        function makeMove(index) {
+            if (gameOver || board[index] !== '') return; // Eğer oyun bitmişse veya hücre doluysa geç
+
+            board[index] = currentPlayer;
+            document.getElementsByClassName('game-board')[0].children[index].textContent = currentPlayer;
+            document.getElementsByClassName('game-board')[0].children[index].classList.add('clicked');
+            
+            // Kazananı kontrol et
+            if (checkWinner()) {
+                statusDiv.textContent = `Oyuncu ${currentPlayer} Kazandı!`;
+                gameOver = true;
+                return;
+            }
+
+            // Oyun devam ediyorsa, diğer oyuncuya geç
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusDiv.textContent = `Oyuncu ${currentPlayer}'in Sırası`;
+        }
+
+        // Kazananı kontrol etmek için fonksiyon
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Yatay
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Dikey
+                [0, 4, 8], [2, 4, 6] // Çapraz
+            ];
+
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return true;
+                }
+            }
+            // Eğer tahta dolmuşsa ama kazanan yoksa, beraberlik
+            if (!board.includes('')) {
+                statusDiv.textContent = 'Beraberlik!';
+                gameOver = true;
+            }
+            return false;
+        }
+
+        // Oyunu sıfırlamak için fonksiyon
+        function resetGame() {
+            board.fill('');
+            currentPlayer = 'X';
+            gameOver = false;
+            statusDiv.textContent = `Oyuncu ${currentPlayer}'in Sırası`;
+
+            const cells = gameBoardDiv.getElementsByTagName('div');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].textContent = '';
+                cells[i].classList.remove('clicked');
+            }
+        }
+    </script>
+</body>
+</html>
